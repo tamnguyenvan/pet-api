@@ -1,27 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect } from "react";
 import { FileUp, Loader2, RefreshCw, Send, ShieldPlus, Trash2, UploadCloud } from "lucide-react";
-
-type KnowledgeFile = {
-	id: string;
-	original_file_name: string;
-	mime_type: string;
-	size_bytes: number;
-	status: "uploaded" | "indexed" | "failed" | "deleted";
-	error_message: string | null;
-	created_at: string;
-};
-
-type AdminInvitation = {
-	id: string;
-	email: string;
-	role: "admin" | "super_admin" | "user";
-	status: "pending" | "accepted" | "revoked" | "expired";
-	expires_at: string | null;
-	accepted_at: string | null;
-	created_at: string;
-};
+import {
+	type AdminInvitation,
+	type KnowledgeFile,
+	useAdminActionsStore,
+} from "@/lib/stores/admin-actions-store";
 
 type ApiPayload = {
 	error?: string;
@@ -47,18 +32,38 @@ export default function AdminActions({
 	initialFiles: KnowledgeFile[];
 	initialInvitations: AdminInvitation[];
 }) {
-	const [title, setTitle] = useState("Getting started with PetAPI Cloud");
-	const [category, setCategory] = useState("docs");
-	const [body, setBody] = useState("Add documentation content that the support assistant should retrieve during RAG.");
-	const [fileTitle, setFileTitle] = useState("");
-	const [fileCategory, setFileCategory] = useState("uploads");
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [fileInputKey, setFileInputKey] = useState(0);
-	const [inviteEmail, setInviteEmail] = useState("");
-	const [files, setFiles] = useState<KnowledgeFile[]>(initialFiles);
-	const [invitations, setInvitations] = useState<AdminInvitation[]>(initialInvitations);
-	const [message, setMessage] = useState<string>();
-	const [isSaving, setIsSaving] = useState(false);
+	const {
+		title,
+		category,
+		body,
+		fileTitle,
+		fileCategory,
+		selectedFile,
+		fileInputKey,
+		inviteEmail,
+		files,
+		invitations,
+		message,
+		isSaving,
+		hydrate,
+		setTitle,
+		setCategory,
+		setBody,
+		setFileTitle,
+		setFileCategory,
+		setSelectedFile,
+		setInviteEmail,
+		setFiles,
+		setInvitations,
+		setMessage,
+		setIsSaving,
+		resetUploadForm,
+		resetInviteForm,
+	} = useAdminActionsStore();
+
+	useEffect(() => {
+		hydrate(initialFiles, initialInvitations);
+	}, [hydrate, initialFiles, initialInvitations]);
 
 	async function loadFiles() {
 		const response = await fetch("/api/admin/uploads");
@@ -127,9 +132,7 @@ export default function AdminActions({
 
 			if (response.ok) {
 				setMessage("File uploaded, converted into a RAG document, and indexed.");
-				setSelectedFile(null);
-				setFileTitle("");
-				setFileInputKey((key) => key + 1);
+				resetUploadForm();
 				await loadFiles();
 			} else {
 				setMessage(payload.error ?? "Unable to upload file.");
@@ -156,7 +159,7 @@ export default function AdminActions({
 
 			if (response.ok) {
 				setMessage(payload.mode === "promoted" ? "Existing user promoted to admin." : "Admin invitation sent.");
-				setInviteEmail("");
+				resetInviteForm();
 				await loadInvitations();
 			} else {
 				setMessage(payload.error ?? "Unable to invite admin.");

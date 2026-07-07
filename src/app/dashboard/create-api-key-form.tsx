@@ -1,19 +1,16 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent } from "react";
 import { KeyRound, Loader2 } from "lucide-react";
+import { useApiKeyFormStore } from "@/lib/stores/api-key-form-store";
 
 export default function CreateApiKeyForm() {
-	const [name, setName] = useState("Production key");
-	const [apiKey, setApiKey] = useState<string>();
-	const [error, setError] = useState<string>();
-	const [isSaving, setIsSaving] = useState(false);
+	const { name, apiKey, error, isSaving, setName, setApiKey, setError, setIsSaving, resetResult } = useApiKeyFormStore();
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setIsSaving(true);
-		setError(undefined);
-		setApiKey(undefined);
+		resetResult();
 
 		const response = await fetch("/api/dashboard/api-keys", {
 			method: "POST",

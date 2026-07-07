@@ -1,21 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent } from "react";
 import { Bot, ChevronDown, Loader2, MessageCircle, Send, Sparkles, X } from "lucide-react";
-
-type Message = {
-	id: string;
-	role: "assistant" | "user";
-	text: string;
-	sources?: string[];
-};
-
-type ChatResponse = {
-	answer?: string;
-	sources?: Array<{ title: string }>;
-	sessionId?: string;
-	error?: string;
-};
+import { useSupportChatStore } from "@/lib/stores/support-chat-store";
 
 const quickPrompts = [
 	"How do API keys work?",
@@ -23,84 +10,13 @@ const quickPrompts = [
 	"Can admins re-index docs?",
 ];
 
-const initialMessages: Message[] = [
-	{
-		id: "welcome",
-		role: "assistant",
-		text:
-			"Ask me about PetAPI Cloud pricing, API usage, docs, billing, dashboard setup, or RAG support. I will answer from the product knowledge base.",
-		sources: ["Product docs", "Support knowledge base"],
-	},
-];
-
 export default function SupportChat() {
-	const [isOpen, setIsOpen] = useState(false);
-	const [messages, setMessages] = useState<Message[]>(initialMessages);
-	const [input, setInput] = useState("");
-	const [sessionId, setSessionId] = useState<string>();
-	const [isSending, setIsSending] = useState(false);
+	const { isOpen, messages, input, isSending, setIsOpen, toggleOpen, setInput, sendMessage } = useSupportChatStore();
 	const hasUserMessages = messages.some((message) => message.role === "user");
-
-	async function sendMessage(question: string) {
-		const trimmedQuestion = question.trim();
-
-		if (!trimmedQuestion || isSending) {
-			return;
-		}
-
-		setMessages((currentMessages) => [
-			...currentMessages,
-			{
-				id: `user-${currentMessages.length}`,
-				role: "user",
-				text: trimmedQuestion,
-			},
-		]);
-		setInput("");
-		setIsOpen(true);
-		setIsSending(true);
-
-		try {
-			const response = await fetch("/api/chat", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ message: trimmedQuestion, sessionId }),
-			});
-			const payload = (await response.json()) as ChatResponse;
-
-			if (payload.sessionId) {
-				setSessionId(payload.sessionId);
-			}
-
-			setMessages((currentMessages) => [
-				...currentMessages,
-				{
-					id: `assistant-${currentMessages.length}`,
-					role: "assistant",
-					text: payload.answer ?? payload.error ?? "I could not answer that yet. Try asking about API keys, pricing, docs, billing, or RAG.",
-					sources: payload.sources?.map((source) => source.title) ?? ["Support knowledge base"],
-				},
-			]);
-		} catch {
-			setMessages((currentMessages) => [
-				...currentMessages,
-				{
-					id: `assistant-${currentMessages.length}`,
-					role: "assistant",
-					text: "The support API is unavailable right now. Try again after the backend is configured.",
-					sources: ["Support API"],
-				},
-			]);
-		} finally {
-			setIsSending(false);
-		}
-	}
 
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		sendMessage(input);
+		void sendMessage(input);
 	}
 
 	return (
@@ -164,7 +80,7 @@ export default function SupportChat() {
 										key={prompt}
 										type="button"
 										className="inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] px-3 py-2 text-xs font-semibold text-[#40566d] transition hover:-translate-y-0.5 hover:border-[#1e7f86] hover:text-[#1e7f86]"
-										onClick={() => sendMessage(prompt)}
+										onClick={() => void sendMessage(prompt)}
 										disabled={isSending}
 									>
 										<Sparkles className="size-3.5" aria-hidden="true" />
@@ -201,7 +117,7 @@ export default function SupportChat() {
 			<button
 				type="button"
 				className="flex items-center gap-3 rounded-full bg-[#102133] px-5 py-4 font-bold text-white shadow-[0_16px_45px_rgba(16,33,51,0.28)] transition duration-300 hover:-translate-y-1 hover:bg-[#1e7f86]"
-				onClick={() => setIsOpen((currentValue) => !currentValue)}
+				onClick={toggleOpen}
 				aria-expanded={isOpen}
 				aria-label="Open PetAPI support chat"
 			>

@@ -1,5 +1,5 @@
-import PageLoading from "../components/page-loading";
+import DashboardSkeleton from "../components/dashboard-skeleton";
 
 export default function Loading() {
-	return <PageLoading label="Loading admin dashboard" />;
+	return <DashboardSkeleton label="Loading admin operations" />;
 }
