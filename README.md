@@ -14,7 +14,7 @@ A Next.js landing page for PetAPI Cloud, a developer-focused cat and dog API pla
 - Super-admin invite flow for admin users
 - RAG file uploads backed by private Supabase Storage
 - Floating AI support chat widget backed by `/api/chat`
-- RAG retrieval over Supabase document chunks with an OpenAI-compatible provider
+- RAG retrieval over Supabase document chunks with Gemini by default and an OpenAI-compatible provider option
 - Versioned pet API demo endpoints under `/api/v1`
 
 ## Tech Stack
@@ -26,6 +26,7 @@ A Next.js landing page for PetAPI Cloud, a developer-focused cat and dog API pla
 - Supabase
 - Drizzle ORM and Drizzle Kit
 - pgvector
+- Gemini API
 - Vercel hosting
 - pnpm for package scripts
 
@@ -38,7 +39,8 @@ Copy `.env.example` into your local environment and fill in:
 - `DATABASE_URL` for Drizzle migrations
 - `SUPER_ADMIN_EMAILS` for owners who can invite admins and manage all uploads
 - `ADMIN_EMAILS` for admin access without invite privileges
-- `OPENAI_COMPATIBLE_*` values for embeddings and chat completions
+- `GEMINI_API_KEY` for RAG embeddings, PDF text extraction, and support-chat generation
+- `AI_PROVIDER=openai-compatible` plus `OPENAI_COMPATIBLE_*` values if you want to swap providers later
 - `RAG_UPLOADS_BUCKET` if you want a bucket name other than `rag-uploads`
 
 For `DATABASE_URL`, use the Supabase database connection string from Project Settings > Database. Make sure the password is the current database password and URL-encoded if it contains special characters. For migrations, prefer the direct connection string when your network allows it; otherwise use the session pooler connection string rather than a transaction pooler connection.
@@ -55,7 +57,7 @@ If Drizzle exits at `applying migrations...` without printing the Postgres error
 pnpm db:check
 ```
 
-After adding knowledge base documents or RAG upload files from `/admin`, the app creates chunks immediately. Use the admin re-index action when you need to regenerate all chunks and embeddings.
+After adding knowledge base documents or RAG upload files from `/admin`, the app creates chunks immediately. Use the admin re-index action when you need to regenerate all chunks and embeddings. Gemini is configured for `gemini-embedding-2` at 1536 dimensions so it matches the current `document_chunks.embedding vector(1536)` schema. If you switch embedding models, providers, or dimensions, re-index all documents because embedding spaces are not compatible.
 
 Admin role split:
 
@@ -82,7 +84,7 @@ pnpm build
 
 ## Backend Routes
 
-- `POST /api/chat` answers support questions with RAG and stores chat history when Supabase is configured.
+- `POST /api/chat` answers support questions with Gemini-backed RAG and stores chat history when Supabase is configured.
 - `POST /api/dashboard/api-keys` creates hashed API keys for the signed-in user.
 - `GET|POST /api/admin/documents` lists and uploads knowledge base documents.
 - `GET|POST /api/admin/uploads` lists and uploads RAG files.

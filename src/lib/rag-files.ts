@@ -1,4 +1,5 @@
 import type { AppAuthUser } from "./auth";
+import { getAiProvider } from "./ai";
 import { ragUploadsBucket } from "./env";
 import { slugify } from "./crypto";
 import { createSupportDocument } from "./rag";
@@ -31,10 +32,12 @@ const extensionToContentType: Record<string, string> = {
 	markdown: "text/markdown",
 	json: "application/json",
 	csv: "text/csv",
+	pdf: "application/pdf",
 };
 
 const allowedExtensions = new Set(Object.keys(extensionToContentType));
 const allowedContentTypes = new Set([...Object.values(extensionToContentType), "application/octet-stream", ""]);
+const textExtensions = new Set(["txt", "md", "markdown", "json", "csv"]);
 
 function getExtension(fileName: string) {
 	return fileName.split(".").pop()?.toLowerCase() ?? "";
@@ -75,7 +78,27 @@ async function ensureRagUploadsBucket() {
 	}
 }
 
-async function extractText(file: File, extension: string) {
+async function extractText(file: File, extension: string, contentType: string) {
+	if (!textExtensions.has(extension)) {
+		const provider = getAiProvider();
+
+		if (!provider.isConfigured || !provider.extractFileText) {
+			throw new Error("Gemini must be configured to extract text from PDF uploads.");
+		}
+
+		const extractedText = (await provider.extractFileText({
+			fileName: file.name,
+			mimeType: contentType,
+			data: await file.arrayBuffer(),
+		}))?.trim();
+
+		if (!extractedText) {
+			throw new Error("No readable text could be extracted from the uploaded file.");
+		}
+
+		return extractedText;
+	}
+
 	const rawText = (await file.text()).trim();
 
 	if (!rawText) {
@@ -101,7 +124,7 @@ function validateFile(file: File) {
 	const extension = getExtension(file.name);
 
 	if (!allowedExtensions.has(extension)) {
-		throw new Error("Unsupported file type. Upload .txt, .md, .markdown, .json, or .csv files.");
+		throw new Error("Unsupported file type. Upload .txt, .md, .markdown, .json, .csv, or .pdf files.");
 	}
 
 	if (!allowedContentTypes.has(file.type)) {
@@ -160,7 +183,7 @@ export async function uploadKnowledgeFile({
 
 	const extension = validateFile(file);
 	const contentType = getContentType(file, extension);
-	const text = await extractText(file, extension);
+	const text = await extractText(file, extension, contentType);
 	const safeFileName = getSafeFileName(file.name);
 	const storagePath = `${appUser.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${safeFileName}`;
 

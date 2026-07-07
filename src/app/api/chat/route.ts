@@ -58,6 +58,7 @@ export async function POST(request: Request) {
 	return NextResponse.json({
 		answer: result.answer,
 		sources: result.sources,
+		rag: result.rag,
 		sessionId,
 		messageId: assistantMessageId,
 	});

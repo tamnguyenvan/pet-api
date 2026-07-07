@@ -28,7 +28,12 @@ type ApiPayload = {
 	invitations?: AdminInvitation[];
 	documents?: number;
 	chunks?: number;
+	embeddedChunks?: number;
+	failedEmbeddings?: number;
 	embeddingsEnabled?: boolean;
+	provider?: string;
+	embeddingModel?: string;
+	embeddingDimensions?: number;
 	mode?: "invited" | "promoted";
 };
 
@@ -170,7 +175,7 @@ export default function AdminActions({
 
 			setMessage(
 				response.ok
-					? `Re-indexed ${payload.documents ?? 0} documents into ${payload.chunks ?? 0} chunks. Embeddings enabled: ${payload.embeddingsEnabled ? "yes" : "no"}.`
+					? `Re-indexed ${payload.documents ?? 0} documents into ${payload.chunks ?? 0} chunks. Embedded ${payload.embeddedChunks ?? 0} with ${payload.provider ?? "AI"} ${payload.embeddingModel ?? ""}${payload.embeddingDimensions ? ` (${payload.embeddingDimensions}d)` : ""}. Failed embeddings: ${payload.failedEmbeddings ?? 0}.`
 					: payload.error ?? "Unable to re-index documents.",
 			);
 		} finally {
@@ -237,7 +242,7 @@ export default function AdminActions({
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div>
 						<h2 className="text-xl font-bold">Knowledge base controls</h2>
-						<p className="mt-1 text-sm text-[#52677d]">Add docs, upload text files, and regenerate chunks/embeddings for RAG.</p>
+						<p className="mt-1 text-sm text-[#52677d]">Add docs, upload text and PDF files, and regenerate chunks/embeddings for RAG.</p>
 					</div>
 					<button className="rounded-[8px] border border-[#b7c8d9] px-4 py-2 text-sm font-bold hover:border-[#1e7f86]" onClick={reindexAll} disabled={isSaving}>
 						Re-index all
@@ -282,7 +287,7 @@ export default function AdminActions({
 					/>
 					<input
 						key={fileInputKey}
-						accept=".txt,.md,.markdown,.json,.csv,text/plain,text/markdown,application/json,text/csv"
+						accept=".txt,.md,.markdown,.json,.csv,.pdf,text/plain,text/markdown,application/json,text/csv,application/pdf"
 						className="w-full rounded-[8px] border border-[#b7c8d9] px-3 py-3 text-sm outline-none focus:border-[#1e7f86]"
 						onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
 						type="file"
