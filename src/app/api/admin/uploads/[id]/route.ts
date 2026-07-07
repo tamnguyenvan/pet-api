@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAdminApiUser } from "@/lib/auth";
 import { deleteKnowledgeFile, RagFileForbiddenError } from "@/lib/rag-files";
 
+export const runtime = "edge";
+
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
 	const authResult = await requireAdminApiUser();
 

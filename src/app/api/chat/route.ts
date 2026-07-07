@@ -4,6 +4,8 @@ import { answerSupportQuestion } from "@/lib/rag";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { ensureAppUser } from "@/lib/users";
 
+export const runtime = "edge";
+
 export async function POST(request: Request) {
 	const body = (await request.json().catch(() => null)) as { message?: string; sessionId?: string; visitorId?: string } | null;
 	const message = body?.message?.trim();

@@ -3,6 +3,7 @@ import { requireAdminUser } from "@/lib/auth";
 import { getAdminDashboardData } from "@/lib/dashboard-data";
 import AdminActions from "./admin-actions";
 
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
