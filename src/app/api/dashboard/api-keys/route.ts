@@ -4,8 +4,6 @@ import { createApiKeySecret, getApiKeyPrefix, sha256Hex } from "@/lib/crypto";
 import { getSupabaseAdmin, getSupabaseSetupMessage } from "@/lib/supabase-admin";
 import { ensureAppUser } from "@/lib/users";
 
-export const runtime = "edge";
-
 export async function POST(request: Request) {
 	const authResult = await requireAuthApiUser();
 

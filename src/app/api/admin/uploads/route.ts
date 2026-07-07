@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireAdminApiUser } from "@/lib/auth";
 import { listKnowledgeFiles, uploadKnowledgeFile } from "@/lib/rag-files";
 
-export const runtime = "edge";
-
 export async function GET() {
 	const authResult = await requireAdminApiUser();
 

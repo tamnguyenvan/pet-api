@@ -1,8 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 import { isClerkConfigured } from "@/lib/env";
 
-export const runtime = "edge";
-
 export default function SignInPage() {
 	if (!isClerkConfigured) {
 		return <AuthSetup title="Clerk sign-in is not configured" />;

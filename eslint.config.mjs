@@ -5,7 +5,7 @@ const eslintConfig = [
 	...nextCoreWebVitals,
 	...nextTypescript,
 	{
-		ignores: [".open-next/**", "cloudflare-env.d.ts"],
+		ignores: [".next/**", ".vercel/**", "node_modules/**", "coverage/**"],
 	},
 ];
 

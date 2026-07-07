@@ -4,8 +4,6 @@ import { createSupportDocument } from "@/lib/rag";
 import { getSupabaseAdmin, getSupabaseSetupMessage } from "@/lib/supabase-admin";
 import { ensureAppUser } from "@/lib/users";
 
-export const runtime = "edge";
-
 export async function GET() {
 	const authResult = await requireAdminApiUser();
 

@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireSuperAdminApiUser } from "@/lib/auth";
 import { inviteAdminUser, listAdminInvitations } from "@/lib/invitations";
 
-export const runtime = "edge";
-
 export async function GET() {
 	const authResult = await requireSuperAdminApiUser();
 

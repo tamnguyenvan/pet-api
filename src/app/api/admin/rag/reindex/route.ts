@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireAdminApiUser } from "@/lib/auth";
 import { reindexKnowledgeBase } from "@/lib/rag";
 
-export const runtime = "edge";
-
 export async function POST(request: Request) {
 	const authResult = await requireAdminApiUser();
 

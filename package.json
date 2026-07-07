@@ -2,23 +2,19 @@
   "name": "pet-api",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint src scripts drizzle.config.ts next.config.ts eslint.config.mjs",
     "db:check": "node scripts/check-db-connection.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.13",
-    "@opennextjs/cloudflare": "^1.19.9",
     "@supabase/supabase-js": "^2.110.0",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.6",
@@ -37,7 +33,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5.7.4",
-    "wrangler": "^4.107.0"
+    "typescript": "^5.7.4"
   }
 }

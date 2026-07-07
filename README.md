@@ -26,7 +26,7 @@ A Next.js landing page for PetAPI Cloud, a developer-focused cat and dog API pla
 - Supabase
 - Drizzle ORM and Drizzle Kit
 - pgvector
-- OpenNext for Cloudflare deployment
+- Vercel hosting
 - pnpm for package scripts
 
 ## Configure
@@ -93,4 +93,4 @@ pnpm build
 
 ## Deploy
 
-Cloudflare Pages target: all dynamic App Router pages and API routes export `runtime = "edge"` so the Pages adapter can produce Edge Functions. Use the Cloudflare Pages Git deployment flow for this setup.
+Deploy with Vercel's standard Next.js preset. Use pnpm, keep the default build command (`pnpm build`), and configure the environment variables from `.env.example` in the Vercel project settings.
