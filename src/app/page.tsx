@@ -1,45 +1,79 @@
 import Link from "next/link";
+import {
+	Activity,
+	ArrowRight,
+	BarChart3,
+	BookOpen,
+	Bot,
+	CheckCircle2,
+	CircleGauge,
+	Cloud,
+	Code2,
+	Database,
+	FileText,
+	Gauge,
+	ImageIcon,
+	KeyRound,
+	LifeBuoy,
+	LockKeyhole,
+	MessageCircleQuestion,
+	PawPrint,
+	Search,
+	ShieldCheck,
+	Sparkles,
+	Users,
+	Zap,
+} from "lucide-react";
+import FaqAccordion from "./components/faq-accordion";
 import SupportChat from "./components/support-chat";
 
 const stats = [
-	{ label: "Platform uptime", value: "99.98%" },
-	{ label: "API requests served", value: "412M+" },
-	{ label: "Developer accounts", value: "38k+" },
-	{ label: "Pet data categories", value: "24" },
+	{ label: "Platform uptime", value: "99.98%", icon: Activity },
+	{ label: "API requests served", value: "412M+", icon: Zap },
+	{ label: "Developer accounts", value: "38k+", icon: Users },
+	{ label: "Pet data categories", value: "24", icon: Database },
 ];
 
 const features = [
 	{
 		title: "Cat and dog images",
 		description: "Production-ready image URLs with species, breed, orientation, and safety metadata.",
+		icon: ImageIcon,
 	},
 	{
 		title: "Breed information",
 		description: "Normalized breed profiles with temperament, size, origin, care notes, and aliases.",
+		icon: PawPrint,
 	},
 	{
 		title: "Random pet facts",
 		description: "Lightweight facts endpoint for onboarding flows, games, education apps, and chat products.",
+		icon: Sparkles,
 	},
 	{
 		title: "Search and filtering",
 		description: "Filter by species, breed, age group, coat, source, tags, and freshness windows.",
+		icon: Search,
 	},
 	{
 		title: "REST API access",
 		description: "Simple JSON endpoints that work from any stack, CLI, backend job, or frontend prototype.",
+		icon: Code2,
 	},
 	{
 		title: "API keys and limits",
 		description: "Scoped keys, environment labels, per-plan quotas, and clear 429 responses for rate limits.",
+		icon: KeyRound,
 	},
 	{
 		title: "Fast response time",
 		description: "Edge-cached lookups keep common pet data and image metadata responsive across regions.",
+		icon: Gauge,
 	},
 	{
 		title: "Hosted infrastructure",
 		description: "Managed ingestion, monitoring, backups, and support workflows without extra operations work.",
+		icon: Cloud,
 	},
 ];
 
@@ -72,16 +106,24 @@ const adminDashboardItems = [
 ];
 
 const saasFeatures = [
-	"Authentication",
-	"User profiles",
-	"Teams and organizations",
-	"Role-based access control",
-	"Subscription plans",
-	"Billing management",
-	"API rate limits",
-	"Usage tracking",
-	"Email notifications",
-	"Admin controls",
+	{ label: "Authentication", icon: LockKeyhole },
+	{ label: "User profiles", icon: Users },
+	{ label: "Teams and organizations", icon: Users },
+	{ label: "Role-based access control", icon: ShieldCheck },
+	{ label: "Subscription plans", icon: CheckCircle2 },
+	{ label: "Billing management", icon: FileText },
+	{ label: "API rate limits", icon: CircleGauge },
+	{ label: "Usage tracking", icon: BarChart3 },
+	{ label: "Email notifications", icon: MessageCircleQuestion },
+	{ label: "Admin controls", icon: ShieldCheck },
+];
+
+const howItWorks = [
+	{ step: "Sign up", icon: Users },
+	{ step: "Get API key", icon: KeyRound },
+	{ step: "Call the API", icon: Code2 },
+	{ step: "Track usage", icon: BarChart3 },
+	{ step: "Ask AI assistant", icon: Bot },
 ];
 
 const plans = [
@@ -139,7 +181,7 @@ const faqs = [
 	{
 		question: "How does the RAG support assistant work?",
 		answer:
-			"The assistant retrieves relevant documentation and support snippets from the knowledge base, sends those snippets to an OpenAI-compatible model, and cites the source material used for the answer.",
+			"The assistant retrieves relevant documentation and support snippets from the knowledge base, sends those snippets to the configured AI provider, and cites the source material used for the answer.",
 	},
 	{
 		question: "Can admins upload support documents?",
@@ -209,10 +251,11 @@ export default function Home() {
 							Log in
 						</Link>
 						<Link
-							className="rounded-[8px] bg-[#102133] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1e7f86]"
+							className="inline-flex items-center gap-2 rounded-[8px] bg-[#102133] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#1e7f86]"
 							href="/sign-up"
 						>
 							Sign up
+							<ArrowRight className="size-4" aria-hidden="true" />
 						</Link>
 					</div>
 				</nav>
@@ -220,7 +263,7 @@ export default function Home() {
 
 			<section id="top" className="relative border-b border-[#dbe7f3] bg-white">
 				<div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-24">
-					<div>
+					<div className="reveal-soft">
 						<p className="mb-5 inline-flex rounded-[8px] border border-[#b9e1e1] bg-[#edfafa] px-3 py-1 text-sm font-semibold text-[#1e7f86]">
 							Reliable cat and dog data for product teams
 						</p>
@@ -233,15 +276,17 @@ export default function Home() {
 						</p>
 						<div className="mt-8 flex flex-col gap-3 sm:flex-row">
 							<Link
-								className="rounded-[8px] bg-[#e85d4f] px-6 py-3 text-center font-semibold text-white shadow-[0_12px_30px_rgba(232,93,79,0.28)] transition hover:bg-[#d84c40]"
+								className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#e85d4f] px-6 py-3 text-center font-semibold text-white shadow-[0_12px_30px_rgba(232,93,79,0.28)] transition hover:-translate-y-0.5 hover:bg-[#d84c40]"
 								href="/sign-up"
 							>
 								Sign up free
+								<ArrowRight className="size-4" aria-hidden="true" />
 							</Link>
 							<a
-								className="rounded-[8px] border border-[#b7c8d9] bg-white px-6 py-3 text-center font-semibold text-[#102133] transition hover:border-[#1e7f86] hover:text-[#1e7f86]"
+								className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#b7c8d9] bg-white px-6 py-3 text-center font-semibold text-[#102133] transition hover:-translate-y-0.5 hover:border-[#1e7f86] hover:text-[#1e7f86]"
 								href="#developer-experience"
 							>
+								<BookOpen className="size-4" aria-hidden="true" />
 								View Docs
 							</a>
 							<Link
@@ -252,13 +297,22 @@ export default function Home() {
 							</Link>
 						</div>
 						<div className="mt-8 flex flex-wrap gap-3 text-sm text-[#52677d]">
-							<span className="rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">REST JSON API</span>
-							<span className="rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">API key auth</span>
-							<span className="rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">RAG support</span>
+							<span className="inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">
+								<Code2 className="size-4 text-[#1e7f86]" aria-hidden="true" />
+								REST JSON API
+							</span>
+							<span className="inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">
+								<KeyRound className="size-4 text-[#1e7f86]" aria-hidden="true" />
+								API key auth
+							</span>
+							<span className="inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2">
+								<Bot className="size-4 text-[#1e7f86]" aria-hidden="true" />
+								RAG support
+							</span>
 						</div>
 					</div>
 
-					<div className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-3 shadow-[0_24px_70px_rgba(16,33,51,0.14)]">
+					<div className="reveal-soft reveal-soft-delay-1 rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-3 shadow-[0_24px_70px_rgba(16,33,51,0.14)]">
 						<div className="rounded-[8px] border border-[#dbe7f3] bg-[#102133] p-4 text-white">
 							<div className="mb-4 flex items-center justify-between gap-4">
 								<div>
@@ -289,9 +343,16 @@ export default function Home() {
 			<section className="bg-[#f7fbff] px-5 py-10 sm:px-8" aria-label="Social proof">
 				<div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					{stats.map((stat) => (
-						<div key={stat.label} className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-							<p className="text-3xl font-bold text-[#102133]">{stat.value}</p>
-							<p className="mt-2 text-sm font-medium text-[#52677d]">{stat.label}</p>
+						<div key={stat.label} className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(16,33,51,0.08)]">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<p className="text-3xl font-bold text-[#102133]">{stat.value}</p>
+									<p className="mt-2 text-sm font-medium text-[#52677d]">{stat.label}</p>
+								</div>
+								<span className="grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+									<stat.icon className="size-5" aria-hidden="true" />
+								</span>
+							</div>
 						</div>
 					))}
 				</div>
@@ -311,8 +372,10 @@ export default function Home() {
 					</div>
 					<div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 						{features.map((feature) => (
-							<article key={feature.title} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-5">
-								<div className="mb-5 size-10 rounded-[8px] bg-[#e8f6f7] ring-1 ring-[#b9e1e1]" />
+							<article key={feature.title} className="group rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-5 transition duration-300 hover:-translate-y-1 hover:border-[#b7c8d9] hover:bg-white hover:shadow-[0_18px_45px_rgba(16,33,51,0.08)]">
+								<div className="mb-5 grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86] ring-1 ring-[#b9e1e1] transition duration-300 group-hover:bg-[#1e7f86] group-hover:text-white">
+									<feature.icon className="size-5" aria-hidden="true" />
+								</div>
 								<h3 className="text-lg font-bold">{feature.title}</h3>
 								<p className="mt-3 text-sm leading-6 text-[#52677d]">{feature.description}</p>
 							</article>
@@ -331,7 +394,7 @@ export default function Home() {
 						<p className="mt-5 text-lg leading-8 text-[#40566d]">
 							The floating chat bubble lets users ask about pricing, API usage, account setup, billing,
 							troubleshooting, and documentation. The assistant retrieves relevant knowledge base chunks,
-							answers with an OpenAI-compatible LLM provider, and cites the content used.
+							answers with the configured AI provider, and cites the content used.
 						</p>
 					</div>
 					<div className="rounded-[8px] border border-[#b9e1e1] bg-white p-5 shadow-[0_18px_50px_rgba(30,127,134,0.16)]">
@@ -340,7 +403,10 @@ export default function Home() {
 								<p className="font-bold">PetAPI Assistant</p>
 								<p className="text-sm text-[#52677d]">Retrieved from docs, pricing, and support KB</p>
 							</div>
-							<span className="rounded-[8px] bg-[#e8f6f7] px-3 py-1 text-xs font-bold text-[#1e7f86]">RAG</span>
+							<span className="inline-flex items-center gap-1 rounded-[8px] bg-[#e8f6f7] px-3 py-1 text-xs font-bold text-[#1e7f86]">
+								<Bot className="size-3.5" aria-hidden="true" />
+								RAG
+							</span>
 						</div>
 						<div className="space-y-3">
 							<div className="max-w-[85%] rounded-[8px] bg-[#f1f6fb] p-4 text-sm leading-6 text-[#40566d]">
@@ -352,7 +418,7 @@ export default function Home() {
 							</div>
 							<div className="grid gap-3 sm:grid-cols-3">
 								{["Docs", "Billing", "Troubleshooting"].map((item) => (
-									<div key={item} className="rounded-[8px] border border-[#dbe7f3] p-3 text-sm font-semibold">
+									<div key={item} className="rounded-[8px] border border-[#dbe7f3] p-3 text-sm font-semibold transition hover:border-[#1e7f86]">
 										{item}
 									</div>
 								))}
@@ -391,11 +457,26 @@ export default function Home() {
 						</div>
 						<div className="mt-5 grid gap-4 md:grid-cols-[0.85fr_1.15fr]">
 							<div className="space-y-2 text-sm text-[#b7c8d9]">
-								<p className="rounded-[8px] bg-white/10 p-3 text-white">Images</p>
-								<p className="rounded-[8px] p-3">Breeds</p>
-								<p className="rounded-[8px] p-3">Facts</p>
-								<p className="rounded-[8px] p-3">Search</p>
-								<p className="rounded-[8px] p-3">Errors</p>
+								<p className="flex items-center gap-2 rounded-[8px] bg-white/10 p-3 text-white">
+									<ImageIcon className="size-4" aria-hidden="true" />
+									Images
+								</p>
+								<p className="flex items-center gap-2 rounded-[8px] p-3">
+									<PawPrint className="size-4" aria-hidden="true" />
+									Breeds
+								</p>
+								<p className="flex items-center gap-2 rounded-[8px] p-3">
+									<Sparkles className="size-4" aria-hidden="true" />
+									Facts
+								</p>
+								<p className="flex items-center gap-2 rounded-[8px] p-3">
+									<Search className="size-4" aria-hidden="true" />
+									Search
+								</p>
+								<p className="flex items-center gap-2 rounded-[8px] p-3">
+									<LifeBuoy className="size-4" aria-hidden="true" />
+									Errors
+								</p>
 							</div>
 							<div className="rounded-[8px] bg-[#07131f] p-4">
 								<p className="text-sm font-semibold text-[#9fe5df]">JavaScript</p>
@@ -445,8 +526,11 @@ const pet = await res.json();`}</code>
 						</div>
 						<div className="grid gap-3 sm:grid-cols-2">
 							{saasFeatures.map((feature) => (
-								<div key={feature} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-4 font-semibold">
-									{feature}
+								<div key={feature.label} className="flex items-center gap-3 rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-4 font-semibold transition duration-300 hover:-translate-y-0.5 hover:border-[#b7c8d9] hover:bg-white">
+									<span className="grid size-9 shrink-0 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+										<feature.icon className="size-4" aria-hidden="true" />
+									</span>
+									{feature.label}
 								</div>
 							))}
 						</div>
@@ -503,14 +587,15 @@ const pet = await res.json();`}</code>
 									))}
 								</ul>
 								<a
-									className={`mt-6 block rounded-[8px] px-5 py-3 text-center font-semibold transition ${
+									className={`mt-6 flex items-center justify-center gap-2 rounded-[8px] px-5 py-3 text-center font-semibold transition ${
 										plan.featured
-											? "bg-[#e85d4f] text-white hover:bg-[#d84c40]"
-											: "border border-[#b7c8d9] text-[#102133] hover:border-[#1e7f86] hover:text-[#1e7f86]"
+											? "bg-[#e85d4f] text-white hover:-translate-y-0.5 hover:bg-[#d84c40]"
+											: "border border-[#b7c8d9] text-[#102133] hover:-translate-y-0.5 hover:border-[#1e7f86] hover:text-[#1e7f86]"
 									}`}
 									href="#final-cta"
 								>
 									Choose {plan.name}
+									<ArrowRight className="size-4" aria-hidden="true" />
 								</a>
 							</article>
 						))}
@@ -527,10 +612,13 @@ const pet = await res.json();`}</code>
 						</h2>
 					</div>
 					<div className="mt-10 grid gap-4 md:grid-cols-5">
-						{["Sign up", "Get API key", "Call the API", "Track usage", "Ask AI assistant"].map((step, index) => (
-							<div key={step} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-5">
+						{howItWorks.map((item, index) => (
+							<div key={item.step} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-5 transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_45px_rgba(16,33,51,0.08)]">
+								<div className="mb-5 grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+									<item.icon className="size-5" aria-hidden="true" />
+								</div>
 								<p className="text-sm font-bold text-[#1e7f86]">Step {index + 1}</p>
-								<p className="mt-4 text-lg font-bold">{step}</p>
+								<p className="mt-4 text-lg font-bold">{item.step}</p>
 							</div>
 						))}
 					</div>
@@ -542,15 +630,11 @@ const pet = await res.json();`}</code>
 					<div>
 						<p className="text-sm font-bold uppercase text-[#1e7f86]">FAQ</p>
 						<h2 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">Common questions, answered clearly.</h2>
+						<p className="mt-5 text-lg leading-8 text-[#52677d]">
+							Short answers for integration, billing, data quality, and AI support workflows.
+						</p>
 					</div>
-					<div className="space-y-4">
-						{faqs.map((faq) => (
-							<details key={faq.question} className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-								<summary className="cursor-pointer text-lg font-bold">{faq.question}</summary>
-								<p className="mt-4 leading-7 text-[#52677d]">{faq.answer}</p>
-							</details>
-						))}
-					</div>
+					<FaqAccordion faqs={faqs} />
 				</div>
 			</section>
 
@@ -567,18 +651,94 @@ const pet = await res.json();`}</code>
 						</p>
 					</div>
 					<div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-						<a className="rounded-[8px] bg-[#e85d4f] px-6 py-3 text-center font-semibold text-white hover:bg-[#d84c40]" href="#pricing">
+						<a className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#e85d4f] px-6 py-3 text-center font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#d84c40]" href="#pricing">
 							Start Building
+							<ArrowRight className="size-4" aria-hidden="true" />
 						</a>
-						<a className="rounded-[8px] border border-white/25 px-6 py-3 text-center font-semibold text-white hover:bg-white/10" href="#developer-experience">
+						<a className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-white/25 px-6 py-3 text-center font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10" href="#developer-experience">
+							<BookOpen className="size-4" aria-hidden="true" />
 							View Docs
 						</a>
 					</div>
 				</div>
 			</section>
 
+			<footer className="border-t border-[#dbe7f3] bg-white px-5 py-12 sm:px-8">
+				<div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.1fr_1fr_1fr_1fr]">
+					<div>
+						<a className="flex items-center gap-3 font-semibold" href="#top" aria-label="PetAPI Cloud home">
+							<span className="grid size-10 place-items-center rounded-[8px] bg-[#1e7f86] text-white">
+								<PawPrint className="size-5" aria-hidden="true" />
+							</span>
+							<span>PetAPI Cloud</span>
+						</a>
+						<p className="mt-4 max-w-sm text-sm leading-6 text-[#52677d]">
+							Cat and dog data APIs with dashboards, usage controls, and grounded AI support for production teams.
+						</p>
+						<div className="mt-5 inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] bg-[#f7fbff] px-3 py-2 text-sm font-semibold text-[#40566d]">
+							<span className="size-2 rounded-full bg-[#1e7f86]" />
+							All systems operational
+						</div>
+					</div>
+					<FooterColumn
+						title="Product"
+						links={[
+							{ label: "Features", href: "#features" },
+							{ label: "API docs", href: "#developer-experience" },
+							{ label: "Pricing", href: "#pricing" },
+							{ label: "AI support", href: "#ai-assistant" },
+						]}
+					/>
+					<FooterColumn
+						title="Platform"
+						links={[
+							{ label: "Dashboard", href: "/dashboard" },
+							{ label: "Admin", href: "/admin" },
+							{ label: "Sign in", href: "/sign-in" },
+							{ label: "Create account", href: "/sign-up" },
+						]}
+					/>
+					<FooterColumn
+						title="Company"
+						links={[
+							{ label: "Security", href: "#features" },
+							{ label: "Support", href: "#faq" },
+							{ label: "Terms", href: "#final-cta" },
+							{ label: "Privacy", href: "#final-cta" },
+						]}
+					/>
+				</div>
+				<div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-[#e7eef6] pt-6 text-sm text-[#52677d] sm:flex-row sm:items-center sm:justify-between">
+					<p>&copy; 2026 PetAPI Cloud. All rights reserved.</p>
+					<p>Built for reliable pet data, clean APIs, and support workflows.</p>
+				</div>
+			</footer>
+
 			<SupportChat />
 		</main>
+	);
+}
+
+function FooterColumn({ title, links }: { title: string; links: Array<{ label: string; href: string }> }) {
+	return (
+		<div>
+			<h2 className="text-sm font-bold uppercase text-[#102133]">{title}</h2>
+			<ul className="mt-4 space-y-3 text-sm text-[#52677d]">
+				{links.map((link) => (
+					<li key={link.label}>
+						{link.href.startsWith("/") ? (
+							<Link className="transition hover:text-[#1e7f86]" href={link.href}>
+								{link.label}
+							</Link>
+						) : (
+							<a className="transition hover:text-[#1e7f86]" href={link.href}>
+								{link.label}
+							</a>
+						)}
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 }
 

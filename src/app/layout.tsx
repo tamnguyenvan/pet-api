@@ -27,7 +27,7 @@ export default function RootLayout({
 	const body = <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>;
 
 	return (
-		<html lang="en">
+		<html lang="en" data-scroll-behavior="smooth">
 			<head>
 				<link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
 			</head>

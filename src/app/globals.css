@@ -36,3 +36,72 @@ summary {
 	background: #b9e1e1;
 	color: #102133;
 }
+
+@keyframes fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes chat-panel {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes loading-shimmer {
+	0% {
+		background-position: 120% 0;
+	}
+	100% {
+		background-position: -120% 0;
+	}
+}
+
+.reveal-soft {
+	animation: fade-in-up 620ms ease-out both;
+}
+
+.reveal-soft-delay-1 {
+	animation-delay: 120ms;
+}
+
+.reveal-soft-delay-2 {
+	animation-delay: 220ms;
+}
+
+.animate-chat-panel {
+	transform-origin: bottom right;
+	animation: chat-panel 220ms ease-out both;
+}
+
+.loading-shimmer {
+	background-image: linear-gradient(90deg, rgba(219, 231, 243, 0.72), rgba(255, 255, 255, 0.85), rgba(219, 231, 243, 0.72));
+	background-size: 220% 100%;
+	animation: loading-shimmer 1.35s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	::before,
+	::after {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 1ms !important;
+	}
+}

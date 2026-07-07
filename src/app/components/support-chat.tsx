@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Bot, ChevronDown, Loader2, MessageCircle, Send, Sparkles, X } from "lucide-react";
 
 type Message = {
 	id: string;
@@ -106,21 +107,26 @@ export default function SupportChat() {
 		<div className="fixed bottom-5 right-5 z-50 flex max-w-[calc(100vw-2.5rem)] flex-col items-end gap-3">
 			{isOpen ? (
 				<section
-					className="w-[min(420px,calc(100vw-2.5rem))] overflow-hidden rounded-[8px] border border-[#dbe7f3] bg-white shadow-[0_24px_80px_rgba(16,33,51,0.22)]"
+					className="animate-chat-panel w-[min(420px,calc(100vw-2.5rem))] overflow-hidden rounded-[8px] border border-[#dbe7f3] bg-white shadow-[0_24px_80px_rgba(16,33,51,0.22)]"
 					aria-label="PetAPI support chat"
 				>
 					<div className="flex items-start justify-between gap-4 bg-[#102133] p-4 text-white">
-						<div>
-							<p className="font-bold">PetAPI Assistant</p>
-							<p className="text-xs text-[#c3d4e3]">RAG over Supabase product docs</p>
+						<div className="flex items-start gap-3">
+							<span className="grid size-9 shrink-0 place-items-center rounded-[8px] bg-[#9fe5df] text-[#102133]">
+								<Bot className="size-5" aria-hidden="true" />
+							</span>
+							<div>
+								<p className="font-bold">PetAPI Assistant</p>
+								<p className="text-xs text-[#c3d4e3]">RAG over Supabase product docs</p>
+							</div>
 						</div>
 						<button
 							type="button"
-							className="rounded-[8px] border border-white/20 px-3 py-1 text-sm font-semibold hover:bg-white/10"
+							className="grid size-9 place-items-center rounded-[8px] border border-white/20 text-sm font-semibold transition hover:bg-white/10"
 							onClick={() => setIsOpen(false)}
 							aria-label="Close support chat"
 						>
-							Close
+							<X className="size-4" aria-hidden="true" />
 						</button>
 					</div>
 
@@ -143,8 +149,9 @@ export default function SupportChat() {
 							</div>
 						))}
 						{isSending ? (
-							<div className="mr-auto max-w-[92%] rounded-[8px] border border-[#dbe7f3] bg-white p-3 text-sm text-[#6b8196]">
-								Searching docs...
+							<div className="mr-auto flex max-w-[92%] items-center gap-2 rounded-[8px] border border-[#dbe7f3] bg-white p-3 text-sm text-[#6b8196]">
+								<Loader2 className="size-4 animate-spin text-[#1e7f86]" aria-hidden="true" />
+								<span>Searching docs...</span>
 							</div>
 						) : null}
 					</div>
@@ -156,10 +163,11 @@ export default function SupportChat() {
 									<button
 										key={prompt}
 										type="button"
-										className="rounded-[8px] border border-[#dbe7f3] px-3 py-2 text-xs font-semibold text-[#40566d] hover:border-[#1e7f86] hover:text-[#1e7f86]"
+										className="inline-flex items-center gap-2 rounded-[8px] border border-[#dbe7f3] px-3 py-2 text-xs font-semibold text-[#40566d] transition hover:-translate-y-0.5 hover:border-[#1e7f86] hover:text-[#1e7f86]"
 										onClick={() => sendMessage(prompt)}
 										disabled={isSending}
 									>
+										<Sparkles className="size-3.5" aria-hidden="true" />
 										{prompt}
 									</button>
 								))}
@@ -179,9 +187,10 @@ export default function SupportChat() {
 							/>
 							<button
 								type="submit"
-								className="rounded-[8px] bg-[#e85d4f] px-4 py-3 text-sm font-bold text-white hover:bg-[#d84c40] disabled:cursor-not-allowed disabled:opacity-60"
+								className="inline-flex items-center gap-2 rounded-[8px] bg-[#e85d4f] px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#d84c40] disabled:cursor-not-allowed disabled:opacity-60"
 								disabled={isSending}
 							>
+								<Send className="size-4" aria-hidden="true" />
 								Send
 							</button>
 						</form>
@@ -191,12 +200,14 @@ export default function SupportChat() {
 
 			<button
 				type="button"
-				className="flex items-center gap-3 rounded-full bg-[#102133] px-5 py-4 font-bold text-white shadow-[0_16px_45px_rgba(16,33,51,0.28)] transition hover:bg-[#1e7f86]"
+				className="flex items-center gap-3 rounded-full bg-[#102133] px-5 py-4 font-bold text-white shadow-[0_16px_45px_rgba(16,33,51,0.28)] transition duration-300 hover:-translate-y-1 hover:bg-[#1e7f86]"
 				onClick={() => setIsOpen((currentValue) => !currentValue)}
 				aria-expanded={isOpen}
 				aria-label="Open PetAPI support chat"
 			>
-				<span className="grid size-8 place-items-center rounded-full bg-[#9fe5df] text-sm text-[#102133]">AI</span>
+				<span className="grid size-8 place-items-center rounded-full bg-[#9fe5df] text-sm text-[#102133]">
+					{isOpen ? <ChevronDown className="size-4" aria-hidden="true" /> : <MessageCircle className="size-4" aria-hidden="true" />}
+				</span>
 				<span className="hidden sm:inline">Ask PetAPI</span>
 			</button>
 		</div>
