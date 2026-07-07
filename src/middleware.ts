@@ -11,7 +11,7 @@ const protectedMiddleware = clerkMiddleware(async (auth, request) => {
 	}
 });
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
 	if (!isClerkConfigured) {
 		return NextResponse.next();
 	}

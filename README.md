@@ -98,3 +98,5 @@ Build and deploy through OpenNext for Cloudflare:
 ```bash
 pnpm deploy
 ```
+
+Cloudflare target: use Workers with `@opennextjs/cloudflare`, not the legacy Cloudflare Pages Next.js adapter. If Cloudflare shows an error asking every dynamic route to add `export const runtime = "edge"`, the project is being built as a Pages/`next-on-pages` app. This repo intentionally uses the Next.js Node runtime through OpenNext, so do not add Edge runtime exports to app routes.
