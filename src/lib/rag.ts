@@ -7,6 +7,41 @@ import { getSupabaseAdmin } from "./supabase-admin";
 export type RetrievedContext = AIProviderContext;
 
 type RetrievalMode = "vector" | "keyword" | "fallback";
+type ScoredContext = {
+	context: RetrievedContext;
+	score: number;
+};
+
+const stopWords = new Set([
+	"a",
+	"about",
+	"an",
+	"and",
+	"are",
+	"as",
+	"at",
+	"be",
+	"by",
+	"can",
+	"do",
+	"does",
+	"for",
+	"from",
+	"how",
+	"in",
+	"is",
+	"it",
+	"of",
+	"on",
+	"or",
+	"the",
+	"to",
+	"what",
+	"when",
+	"where",
+	"which",
+	"with",
+]);
 
 const fallbackDocuments: RetrievedContext[] = [
 	{
@@ -40,15 +75,45 @@ function normalizeWhitespace(input: string) {
 	return input.replace(/\s+/g, " ").trim();
 }
 
+function stemToken(term: string) {
+	if (term.length <= 4) {
+		return term;
+	}
+
+	return term.replace(/(?:ing|ed|es|s)$/u, "");
+}
+
 function tokenize(input: string) {
 	return input
 		.toLowerCase()
-		.replace(/[^a-z0-9\s-]/g, " ")
+		.replace(/[^a-z0-9\s-]/gu, " ")
 		.split(/\s+/)
-		.filter((term) => term.length > 2);
+		.map(stemToken)
+		.filter((term) => term.length > 2 && !stopWords.has(term));
 }
 
-function scoreContexts(query: string, contexts: RetrievedContext[]) {
+function getTokenSet(input: string) {
+	return new Set(tokenize(input));
+}
+
+function scoreContext(queryTerms: string[], context: RetrievedContext) {
+	const titleTokens = getTokenSet(context.title);
+	const contentTokens = getTokenSet(context.content);
+
+	return queryTerms.reduce((total, term) => {
+		if (titleTokens.has(term)) {
+			return total + 3;
+		}
+
+		if (contentTokens.has(term)) {
+			return total + 1;
+		}
+
+		return total;
+	}, 0);
+}
+
+function scoreContextsDetailed(query: string, contexts: RetrievedContext[]): ScoredContext[] {
 	const terms = tokenize(query);
 
 	if (terms.length === 0) {
@@ -57,21 +122,59 @@ function scoreContexts(query: string, contexts: RetrievedContext[]) {
 
 	return contexts
 		.map((context) => {
-			const searchable = `${context.title} ${context.content}`.toLowerCase();
-			const score = terms.reduce((total, term) => total + (searchable.includes(term) ? 1 : 0), 0);
+			const score = scoreContext(terms, context);
 
 			return {
 				context: {
 					...context,
-					similarity: context.similarity ?? Number((score / terms.length).toFixed(4)),
+					similarity: context.similarity ?? Number((score / Math.max(terms.length, 1)).toFixed(4)),
 				},
 				score,
 			};
 		})
 		.filter((result) => result.score > 0)
 		.sort((a, b) => b.score - a.score)
-		.slice(0, ragConfig.maxContextChunks)
-		.map((result) => result.context);
+		.slice(0, ragConfig.maxContextChunks);
+}
+
+function scoreContexts(query: string, contexts: RetrievedContext[]) {
+	return scoreContextsDetailed(query, contexts).map((result) => result.context);
+}
+
+function prioritizeContexts(query: string, contexts: RetrievedContext[]) {
+	const scoredContexts = scoreContextsDetailed(query, contexts);
+
+	if (scoredContexts.length > 0) {
+		return scoredContexts
+			.sort((a, b) => b.score - a.score || (b.context.similarity ?? 0) - (a.context.similarity ?? 0))
+			.slice(0, ragConfig.maxContextChunks)
+			.map((result) => result.context);
+	}
+
+	return contexts
+		.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
+		.slice(0, ragConfig.maxContextChunks);
+}
+
+function splitIntoAnswerSentences(content: string) {
+	return content
+		.replace(/\n+/g, " ")
+		.split(/(?<=[.!?])\s+|(?:\s+-\s+)/u)
+		.map((sentence) => sentence.trim())
+		.filter((sentence) => sentence.length > 24);
+}
+
+function selectRelevantSentences(question: string, contexts: RetrievedContext[]) {
+	const sentenceContexts = contexts.flatMap((context) =>
+		splitIntoAnswerSentences(context.content).map((sentence): RetrievedContext => ({
+			...context,
+			content: sentence,
+		})),
+	);
+
+	return scoreContextsDetailed(question, sentenceContexts)
+		.slice(0, 4)
+		.map((result) => result.context.content);
 }
 
 export function chunkText(text: string, maxWords = ragConfig.chunkWords, overlapWords = ragConfig.chunkOverlapWords) {
@@ -170,8 +273,8 @@ async function createChatAnswer(question: string, contexts: RetrievedContext[]) 
 	try {
 		return await provider.generateText({
 			system:
-				"You are PetAPI Cloud support. Answer only from the supplied documentation context. If the context is insufficient, say exactly what is missing and suggest the next concrete place to check. Be concise, accurate, and do not expose hidden reasoning.",
-			prompt: `Question:\n${question}\n\nDocumentation context:\n${buildContextBlock(contexts)}\n\nReturn a helpful support answer. Reference source numbers when useful.`,
+				"You are PetAPI Cloud support. Answer the user's exact question using only relevant supplied documentation context. Ignore unrelated chunks even if they were retrieved. If the relevant context is insufficient, say exactly what is missing and suggest the next concrete place to check. Be concise, accurate, and do not expose hidden reasoning.",
+			prompt: `Question:\n${question}\n\nDocumentation context:\n${buildContextBlock(contexts)}\n\nReturn a direct support answer. Do not concatenate or summarize every source. Reference source numbers only when useful.`,
 			temperature: 0.2,
 			maxOutputTokens: 1200,
 		});
@@ -204,16 +307,18 @@ async function retrieveFromSupabase(query: string): Promise<{ contexts: Retrieve
 		}
 
 		if (data?.length) {
+			const contexts = data.map((row: Record<string, unknown>): RetrievedContext => ({
+				chunkId: String(row.chunk_id),
+				documentId: String(row.document_id),
+				title: String(row.title),
+				content: String(row.content),
+				similarity: Number(row.similarity),
+				metadata: row.metadata as Record<string, unknown>,
+			}));
+
 			return {
 				mode: "vector",
-				contexts: data.slice(0, ragConfig.maxContextChunks).map((row: Record<string, unknown>): RetrievedContext => ({
-					chunkId: String(row.chunk_id),
-					documentId: String(row.document_id),
-					title: String(row.title),
-					content: String(row.content),
-					similarity: Number(row.similarity),
-					metadata: row.metadata as Record<string, unknown>,
-				})),
+				contexts: prioritizeContexts(query, contexts),
 			};
 		}
 	}
@@ -234,23 +339,40 @@ async function retrieveFromSupabase(query: string): Promise<{ contexts: Retrieve
 		return null;
 	}
 
-	const contexts = scoreContexts(
-		query,
-		data.map((document): RetrievedContext => ({
+	const chunkedDocuments = data.flatMap((document): RetrievedContext[] =>
+		chunkText(document.body).map((content, index) => ({
 			documentId: document.id,
 			title: document.title,
-			content: document.body,
-			metadata: document.metadata,
+			content,
+			metadata: {
+				...(document.metadata ?? {}),
+				fallbackChunkIndex: index,
+			},
 		})),
+	);
+
+	const contexts = scoreContexts(
+		query,
+		chunkedDocuments,
 	);
 
 	return contexts.length ? { contexts, mode: "keyword" } : null;
 }
 
-function createFallbackAnswer(selectedContexts: RetrievedContext[]) {
-	return `Based on ${selectedContexts.map((context) => context.title).join(" and ")}: ${selectedContexts
-		.map((context) => context.content)
-		.join(" ")}`;
+function createFallbackAnswer(question: string, selectedContexts: RetrievedContext[]) {
+	const sentences = selectRelevantSentences(question, selectedContexts);
+
+	if (sentences.length > 0) {
+		return sentences.join(" ");
+	}
+
+	const [firstContext] = selectedContexts;
+
+	if (!firstContext) {
+		return "I do not have enough indexed documentation to answer that yet.";
+	}
+
+	return `I found ${firstContext.title}, but the indexed context is not specific enough to answer confidently. Add a focused API or product-plan document and re-index the knowledge base.`;
 }
 
 export async function answerSupportQuestion(question: string) {
@@ -261,7 +383,7 @@ export async function answerSupportQuestion(question: string) {
 	const provider = getAiProvider();
 
 	return {
-		answer: llmAnswer ?? createFallbackAnswer(selectedContexts),
+		answer: llmAnswer ?? createFallbackAnswer(question, selectedContexts),
 		sources: selectedContexts.map((context) => ({
 			title: context.title,
 			chunkId: context.chunkId,

@@ -38,6 +38,7 @@ export default function SupportChat() {
 	const [input, setInput] = useState("");
 	const [sessionId, setSessionId] = useState<string>();
 	const [isSending, setIsSending] = useState(false);
+	const hasUserMessages = messages.some((message) => message.role === "user");
 
 	async function sendMessage(question: string) {
 		const trimmedQuestion = question.trim();
@@ -149,19 +150,21 @@ export default function SupportChat() {
 					</div>
 
 					<div className="border-t border-[#dbe7f3] bg-white p-4">
-						<div className="mb-3 flex flex-wrap gap-2">
-							{quickPrompts.map((prompt) => (
-								<button
-									key={prompt}
-									type="button"
-									className="rounded-[8px] border border-[#dbe7f3] px-3 py-2 text-xs font-semibold text-[#40566d] hover:border-[#1e7f86] hover:text-[#1e7f86]"
-									onClick={() => sendMessage(prompt)}
-									disabled={isSending}
-								>
-									{prompt}
-								</button>
-							))}
-						</div>
+						{hasUserMessages ? null : (
+							<div className="mb-3 flex flex-wrap gap-2">
+								{quickPrompts.map((prompt) => (
+									<button
+										key={prompt}
+										type="button"
+										className="rounded-[8px] border border-[#dbe7f3] px-3 py-2 text-xs font-semibold text-[#40566d] hover:border-[#1e7f86] hover:text-[#1e7f86]"
+										onClick={() => sendMessage(prompt)}
+										disabled={isSending}
+									>
+										{prompt}
+									</button>
+								))}
+							</div>
+						)}
 						<form className="flex gap-2" onSubmit={handleSubmit}>
 							<label className="sr-only" htmlFor="support-question">
 								Ask PetAPI Assistant
