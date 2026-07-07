@@ -1,4 +1,16 @@
-import Link from "next/link";
+import {
+	Activity,
+	BarChart3,
+	Bot,
+	CircleGauge,
+	Home,
+	KeyRound,
+	LayoutDashboard,
+	LifeBuoy,
+	ShieldCheck,
+} from "lucide-react";
+import type { ReactNode } from "react";
+import AppShell, { ShellActionLink } from "../components/app-shell";
 import { requireAuthUser } from "@/lib/auth";
 import { getUserDashboardData } from "@/lib/dashboard-data";
 import CreateApiKeyForm from "./create-api-key-form";
@@ -15,117 +27,183 @@ export default async function DashboardPage() {
 	const data = await getUserDashboardData(authResult.user);
 	const subscription = data.subscription;
 	const requestLimit = subscription?.monthly_request_limit ?? 10000;
+	const usagePercent = requestLimit > 0 ? Math.min(100, Math.round((data.requestsThisMonth / requestLimit) * 100)) : 0;
 	const isAdmin = authResult.user.isAdmin || data.appUser?.role === "admin" || data.appUser?.role === "super_admin";
 
+	const navItems = [
+		{ label: "Overview", href: "/dashboard", active: true, icon: <LayoutDashboard className="size-4" aria-hidden="true" /> },
+		{ label: "API keys", href: "#api-keys", icon: <KeyRound className="size-4" aria-hidden="true" /> },
+		{ label: "Usage", href: "#usage", icon: <BarChart3 className="size-4" aria-hidden="true" /> },
+		{ label: "Support", href: "#support", icon: <LifeBuoy className="size-4" aria-hidden="true" /> },
+		...(isAdmin ? [{ label: "Admin", href: "/admin", icon: <ShieldCheck className="size-4" aria-hidden="true" /> }] : []),
+		{ label: "Home", href: "/", icon: <Home className="size-4" aria-hidden="true" /> },
+	];
+
 	return (
-		<main className="min-h-screen bg-[#f7fbff] px-5 py-8 text-[#102133] sm:px-8">
-			<DashboardHeader isAdmin={isAdmin} />
-			<section className="mx-auto mt-8 grid max-w-7xl gap-4 md:grid-cols-4">
-				<Metric label="Plan" value={subscription?.plan ?? "free"} />
-				<Metric label="Requests this month" value={`${data.requestsThisMonth.toLocaleString()} / ${requestLimit.toLocaleString()}`} />
-				<Metric label="API keys" value={String(data.apiKeys.length)} />
-				<Metric label="Support chats" value={String(data.chatSessions.length)} />
+		<AppShell
+			title="User Dashboard"
+			description="Manage API keys, monitor monthly usage, and review support activity from one workspace."
+			eyebrow="Workspace"
+			navItems={navItems}
+			user={{
+				name: authResult.user.name,
+				email: authResult.user.email,
+				avatarUrl: authResult.user.avatarUrl,
+				roleLabel: data.appUser?.role?.replace("_", " ") ?? "user",
+			}}
+			actions={
+				<>
+					<ShellActionLink href="/#developer-experience">Docs</ShellActionLink>
+					{isAdmin ? <ShellActionLink href="/admin">Admin</ShellActionLink> : null}
+				</>
+			}
+		>
+			<section className="grid gap-4 xl:grid-cols-4">
+				<MetricCard icon={<CircleGauge className="size-5" aria-hidden="true" />} label="Plan" value={subscription?.plan ?? "free"} detail={subscription?.status ?? "active"} />
+				<MetricCard
+					icon={<Activity className="size-5" aria-hidden="true" />}
+					label="Requests this month"
+					value={`${data.requestsThisMonth.toLocaleString()} / ${requestLimit.toLocaleString()}`}
+					detail={`${usagePercent}% used`}
+				/>
+				<MetricCard icon={<KeyRound className="size-5" aria-hidden="true" />} label="API keys" value={String(data.apiKeys.length)} detail="Active and disabled keys" />
+				<MetricCard icon={<Bot className="size-5" aria-hidden="true" />} label="Support chats" value={String(data.chatSessions.length)} detail="Recent assistant sessions" />
 			</section>
 
-			<section className="mx-auto mt-8 grid max-w-7xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+			<section className="mt-6 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
 				<div className="space-y-6">
 					<CreateApiKeyForm />
-					<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-						<h2 className="text-xl font-bold">API keys</h2>
-						<div className="mt-4 space-y-3">
+
+					<Panel id="api-keys" title="API keys" description="Keys are stored hashed. Copy new secrets immediately after creation.">
+						<div className="space-y-3">
 							{data.apiKeys.length ? (
 								data.apiKeys.map((key) => (
 									<div key={key.id} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-4">
-										<div className="flex items-center justify-between gap-3">
-											<p className="font-bold">{key.name}</p>
-											<span className="rounded-[8px] bg-[#edfafa] px-2 py-1 text-xs font-bold text-[#1e7f86]">
-												{key.is_active ? "Active" : "Disabled"}
-											</span>
+										<div className="flex items-start justify-between gap-3">
+											<div className="min-w-0">
+												<p className="truncate font-bold">{key.name}</p>
+												<code className="mt-2 block text-sm text-[#52677d]">{key.key_prefix}</code>
+											</div>
+											<StatusBadge tone={key.is_active ? "success" : "neutral"}>{key.is_active ? "Active" : "Disabled"}</StatusBadge>
 										</div>
-										<code className="mt-2 block text-sm text-[#52677d]">{key.key_prefix}</code>
-										<p className="mt-2 text-sm text-[#52677d]">Monthly limit: {key.monthly_limit.toLocaleString()}</p>
+										<div className="mt-4 grid gap-3 text-sm text-[#52677d] sm:grid-cols-2">
+											<p>Monthly limit: {key.monthly_limit.toLocaleString()}</p>
+											<p>Last used: {key.last_used_at ? formatDate(key.last_used_at) : "Never"}</p>
+										</div>
 									</div>
 								))
 							) : (
-								<p className="text-sm text-[#52677d]">No API keys yet. Create one to call `/api/v1/*` endpoints.</p>
+								<EmptyState title="No API keys yet" description="Create a key to call the /api/v1 endpoints from your backend." />
 							)}
 						</div>
-					</section>
+					</Panel>
 				</div>
 
 				<div className="space-y-6">
-					<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-						<h2 className="text-xl font-bold">Recent requests</h2>
-						<div className="mt-4 overflow-x-auto">
+					<Panel id="usage" title="Usage overview" description="Monthly consumption and recent API traffic.">
+						<div className="mb-5">
+							<div className="flex items-center justify-between text-sm">
+								<span className="font-semibold text-[#40566d]">Monthly request usage</span>
+								<span className="font-bold text-[#102133]">{usagePercent}%</span>
+							</div>
+							<div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e7eef6]">
+								<div className="h-full rounded-full bg-[#1e7f86]" style={{ width: `${usagePercent}%` }} />
+							</div>
+						</div>
+						<div className="overflow-hidden rounded-[8px] border border-[#dbe7f3]">
 							<table className="w-full text-left text-sm">
-								<thead className="text-[#52677d]">
+								<thead className="bg-[#f8fbff] text-xs uppercase text-[#52677d]">
 									<tr>
-										<th className="py-2">Endpoint</th>
-										<th className="py-2">Status</th>
-										<th className="py-2">Latency</th>
+										<th className="px-4 py-3">Endpoint</th>
+										<th className="px-4 py-3">Status</th>
+										<th className="px-4 py-3">Latency</th>
 									</tr>
 								</thead>
 								<tbody>
-									{data.usageEvents.map((event) => (
-										<tr key={event.id} className="border-t border-[#dbe7f3]">
-											<td className="py-3 font-medium">{event.endpoint}</td>
-											<td className="py-3">{event.status_code}</td>
-											<td className="py-3">{event.latency_ms}ms</td>
+									{data.usageEvents.length ? (
+										data.usageEvents.map((event) => (
+											<tr key={event.id} className="border-t border-[#e7eef6]">
+												<td className="px-4 py-3 font-medium">{event.endpoint}</td>
+												<td className="px-4 py-3">{event.status_code}</td>
+												<td className="px-4 py-3">{event.latency_ms}ms</td>
+											</tr>
+										))
+									) : (
+										<tr>
+											<td className="px-4 py-6 text-[#52677d]" colSpan={3}>
+												No requests logged yet.
+											</td>
 										</tr>
-									))}
+									)}
 								</tbody>
 							</table>
 						</div>
-					</section>
-					<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-						<h2 className="text-xl font-bold">Support chat history</h2>
-						<div className="mt-4 space-y-3">
+					</Panel>
+
+					<Panel id="support" title="Support chat history" description="Recent sessions with the PetAPI assistant.">
+						<div className="grid gap-3 md:grid-cols-2">
 							{data.chatSessions.length ? (
 								data.chatSessions.map((session) => (
 									<div key={session.id} className="rounded-[8px] border border-[#dbe7f3] bg-[#f8fbff] p-4">
-										<p className="font-semibold">{session.topic}</p>
-										<p className="mt-1 text-sm text-[#52677d]">Updated {new Date(session.updated_at).toLocaleString()}</p>
+										<p className="font-semibold capitalize">{session.topic}</p>
+										<p className="mt-1 text-sm text-[#52677d]">Updated {formatDate(session.updated_at)}</p>
 									</div>
 								))
 							) : (
-								<p className="text-sm text-[#52677d]">No support chats yet.</p>
+								<EmptyState title="No support chats yet" description="Use Ask PetAPI from the landing page to start a support session." />
 							)}
 						</div>
-					</section>
+					</Panel>
 				</div>
 			</section>
-		</main>
+		</AppShell>
 	);
 }
 
-function DashboardHeader({ isAdmin }: { isAdmin: boolean }) {
+function MetricCard({ icon, label, value, detail }: { icon: ReactNode; label: string; value: string; detail: string }) {
 	return (
-		<header className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-			<div>
-				<p className="text-sm font-bold uppercase text-[#1e7f86]">User dashboard</p>
-				<h1 className="mt-2 text-4xl font-bold">API keys, usage, billing, and support history</h1>
+		<div className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 shadow-sm">
+			<div className="flex items-start justify-between gap-4">
+				<div>
+					<p className="text-sm font-semibold text-[#52677d]">{label}</p>
+					<p className="mt-2 text-2xl font-bold capitalize">{value}</p>
+					<p className="mt-1 text-xs font-medium text-[#6b8196]">{detail}</p>
+				</div>
+				<span className="grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">{icon}</span>
 			</div>
-			<nav className="flex gap-3 text-sm font-bold">
-				<Link className="rounded-[8px] border border-[#b7c8d9] px-4 py-2 hover:border-[#1e7f86]" href="/">
-					Home
-				</Link>
-				{isAdmin ? (
-					<Link className="rounded-[8px] bg-[#102133] px-4 py-2 text-white hover:bg-[#1e7f86]" href="/admin">
-						Admin
-					</Link>
-				) : null}
-			</nav>
-		</header>
-	);
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-			<p className="text-sm font-semibold text-[#52677d]">{label}</p>
-			<p className="mt-2 text-2xl font-bold capitalize">{value}</p>
 		</div>
 	);
+}
+
+function Panel({ id, title, description, children }: { id: string; title: string; description: string; children: ReactNode }) {
+	return (
+		<section id={id} className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 shadow-sm scroll-mt-28">
+			<div className="mb-5">
+				<h2 className="text-xl font-bold">{title}</h2>
+				<p className="mt-1 text-sm leading-6 text-[#52677d]">{description}</p>
+			</div>
+			{children}
+		</section>
+	);
+}
+
+function StatusBadge({ tone, children }: { tone: "success" | "neutral"; children: ReactNode }) {
+	const classes = tone === "success" ? "bg-[#edfafa] text-[#1e7f86]" : "bg-[#edf3f8] text-[#52677d]";
+
+	return <span className={`rounded-[8px] px-2 py-1 text-xs font-bold ${classes}`}>{children}</span>;
+}
+
+function EmptyState({ title, description }: { title: string; description: string }) {
+	return (
+		<div className="rounded-[8px] border border-dashed border-[#b7c8d9] bg-[#f8fbff] p-5 text-sm">
+			<p className="font-bold text-[#102133]">{title}</p>
+			<p className="mt-1 leading-6 text-[#52677d]">{description}</p>
+		</div>
+	);
+}
+
+function formatDate(value: string) {
+	return new Date(value).toLocaleString();
 }
 
 function SetupRequired({ title }: { title: string }) {

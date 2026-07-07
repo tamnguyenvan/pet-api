@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { FileUp, Loader2, RefreshCw, Send, ShieldPlus, Trash2, UploadCloud } from "lucide-react";
 
 type KnowledgeFile = {
 	id: string;
@@ -205,9 +206,16 @@ export default function AdminActions({
 	return (
 		<>
 			{canInviteAdmins ? (
-				<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-					<h2 className="text-xl font-bold">Invite admin</h2>
-					<p className="mt-1 text-sm text-[#52677d]">Super admins can invite admins. Invited admins can manage RAG docs and uploads, but cannot invite admins.</p>
+				<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 shadow-sm">
+					<div className="flex items-start gap-3">
+						<span className="grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+							<ShieldPlus className="size-5" aria-hidden="true" />
+						</span>
+						<div>
+							<h2 className="text-xl font-bold">Invite admin</h2>
+							<p className="mt-1 text-sm leading-6 text-[#52677d]">Super admins can invite admins. Invited admins can manage RAG docs and uploads, but cannot invite admins.</p>
+						</div>
+					</div>
 					<form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={inviteAdmin}>
 						<input
 							className="min-w-0 flex-1 rounded-[8px] border border-[#b7c8d9] px-3 py-3 text-sm outline-none focus:border-[#1e7f86]"
@@ -216,7 +224,8 @@ export default function AdminActions({
 							placeholder="admin@example.com"
 							type="email"
 						/>
-						<button className="rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white hover:bg-[#1e7f86]" disabled={isSaving}>
+						<button className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1e7f86] disabled:cursor-not-allowed disabled:opacity-70" disabled={isSaving}>
+							<Send className="size-4" aria-hidden="true" />
 							Send invite
 						</button>
 					</form>
@@ -238,13 +247,19 @@ export default function AdminActions({
 				</section>
 			) : null}
 
-			<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
+			<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 shadow-sm">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<div>
-						<h2 className="text-xl font-bold">Knowledge base controls</h2>
-						<p className="mt-1 text-sm text-[#52677d]">Add docs, upload text and PDF files, and regenerate chunks/embeddings for RAG.</p>
+					<div className="flex items-start gap-3">
+						<span className="grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+							<FileUp className="size-5" aria-hidden="true" />
+						</span>
+						<div>
+							<h2 className="text-xl font-bold">Knowledge base controls</h2>
+							<p className="mt-1 text-sm leading-6 text-[#52677d]">Add docs, upload text and PDF files, and regenerate chunks/embeddings for RAG.</p>
+						</div>
 					</div>
-					<button className="rounded-[8px] border border-[#b7c8d9] px-4 py-2 text-sm font-bold hover:border-[#1e7f86]" onClick={reindexAll} disabled={isSaving}>
+					<button className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#b7c8d9] bg-white px-4 py-2 text-sm font-bold transition hover:border-[#1e7f86] disabled:cursor-not-allowed disabled:opacity-70" onClick={reindexAll} disabled={isSaving}>
+						{isSaving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="size-4" aria-hidden="true" />}
 						Re-index all
 					</button>
 				</div>
@@ -267,7 +282,8 @@ export default function AdminActions({
 						onChange={(event) => setBody(event.target.value)}
 						placeholder="Document body"
 					/>
-					<button className="rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white hover:bg-[#1e7f86]" disabled={isSaving}>
+					<button className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1e7f86] disabled:cursor-not-allowed disabled:opacity-70" disabled={isSaving}>
+						{isSaving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <FileUp className="size-4" aria-hidden="true" />}
 						{isSaving ? "Saving..." : "Save document"}
 					</button>
 				</form>
@@ -292,15 +308,24 @@ export default function AdminActions({
 						onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
 						type="file"
 					/>
-					<button className="rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white hover:bg-[#1e7f86]" disabled={isSaving}>
+					<button className="inline-flex items-center justify-center gap-2 rounded-[8px] bg-[#102133] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1e7f86] disabled:cursor-not-allowed disabled:opacity-70" disabled={isSaving}>
+						<UploadCloud className="size-4" aria-hidden="true" />
 						Upload and index
 					</button>
 				</form>
 				{message ? <p className="mt-4 rounded-[8px] bg-[#f7fbff] p-3 text-sm font-semibold text-[#40566d]">{message}</p> : null}
 			</section>
 
-			<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5">
-				<h2 className="text-xl font-bold">Uploaded file manager</h2>
+			<section className="rounded-[8px] border border-[#dbe7f3] bg-white p-5 shadow-sm">
+				<div className="flex items-start gap-3">
+					<span className="grid size-10 place-items-center rounded-[8px] bg-[#e8f6f7] text-[#1e7f86]">
+						<UploadCloud className="size-5" aria-hidden="true" />
+					</span>
+					<div>
+						<h2 className="text-xl font-bold">Uploaded file manager</h2>
+						<p className="mt-1 text-sm leading-6 text-[#52677d]">Manage uploaded source files and linked RAG documents.</p>
+					</div>
+				</div>
 				<div className="mt-4 space-y-3">
 					{files.length ? (
 						files.map((file) => (
@@ -309,11 +334,12 @@ export default function AdminActions({
 									<div className="min-w-0">
 										<p className="break-words font-bold">{file.original_file_name}</p>
 										<p className="mt-1 text-[#52677d]">
-											{formatBytes(file.size_bytes)} · {file.mime_type} · {file.status}
+											{formatBytes(file.size_bytes)} / {file.mime_type} / {file.status}
 										</p>
 										{file.error_message ? <p className="mt-2 text-[#9b2c2c]">{file.error_message}</p> : null}
 									</div>
-									<button className="rounded-[8px] border border-[#b7c8d9] px-3 py-2 font-bold hover:border-[#9b2c2c]" disabled={isSaving} onClick={() => void deleteFile(file.id)}>
+									<button className="inline-flex items-center justify-center gap-2 rounded-[8px] border border-[#b7c8d9] bg-white px-3 py-2 font-bold transition hover:border-[#9b2c2c] hover:text-[#9b2c2c] disabled:cursor-not-allowed disabled:opacity-70" disabled={isSaving} onClick={() => void deleteFile(file.id)}>
+										<Trash2 className="size-4" aria-hidden="true" />
 										Delete
 									</button>
 								</div>
